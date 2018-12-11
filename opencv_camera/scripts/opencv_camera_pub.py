@@ -7,7 +7,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
 ##Create publisher of data type Image
-image_publisher = rospy.Publisher("OpenCV_Camera_Pub", Image)
+image_publisher = rospy.Publisher("OpenCV_Camera_Pub", Image,queue_size=10)
 rospy.init_node("OpenCV_Camera_Pub_node", anonymous=True)
 ##Initialize cv_bridge
 bridge = CvBridge()
@@ -27,7 +27,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 
 ###########User Settings############
 SpeedOnOff = False
-AltitudeOnOff = False 
+AltitudeOnOff = False
 while(True):
 	speed+=1;
 	altitude+=1;
@@ -40,27 +40,21 @@ while(True):
 ############Toggles###############################
 	if AltitudeOnOff:
 		cv2.putText(frame,'alt  '+str(altitude)+" ft",(10,30), font, 1,(66,244,72),2)
-        if SpeedOnOff:
-                cv2.putText(frame,'spd '+ str(speed)+" mph",(10,60), font, 1,(66,244,72),2)
+	if SpeedOnOff:
+		cv2.putText(frame,'spd '+ str(speed)+" mph",(10,60), font, 1,(66,244,72),2)
 #####################Display Frame###############
 
-        cv2.imshow('Publisher Frame',frame)
-
+	cv2.imshow('Publisher Frame',frame)
+	check = cv2.waitKey(1)
 ####################Toggle Speed #################
-        if cv2.waitKey(1) & 0xFF == ord('s'):
-                if not SpeedOnOff:
-                        SpeedOnOff = True
-                else:
-                        SpeedOnOff = False
-#############Toggle Altitude####################### 
-        if cv2.waitKey(1) & 0xFF == ord('a'):
-                if not AltitudeOnOff:
-                        AltitudeOnOff = True
-                else:
-                        AltitudeOnOff = False
-###################QUIT###########################
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+	if check == ord('s'):
+			SpeedOnOff = not SpeedOnOff
+#############Toggle Altitude#######################
+	if check== ord('a'):
+		AltitudeOnOff = not AltitudeOnOff
+###################QUIT##########################
+	if check == ord('q'):
+		break
 ###################################
 	try:
 		image_publisher.publish(bridge.cv2_to_imgmsg(frame,"bgr8"))
@@ -69,10 +63,7 @@ while(True):
 cap.release()
 cv2.destroyAllWindows()
 
-try:
-	rospy.spin()
-except KeyboardInterrupt:
-	print("closing")
+
 
 
 
